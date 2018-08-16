@@ -1,13 +1,3 @@
-# insights-streaming
-Experimental repository for processing of stream data using insights.
-
-Dependencies are declared like with other insights components, and core wires
-everything together. We then run all of the streams, and data flows out through
-``emit`` calls and into the ``update`` functions of dependents. If ``update``
-returns anything but ``None``, the value is emitted to downstream dependents.
-``update`` can also call ``emit`` directly.
- 
-```python
 #!/usr/bin/env python
 from __future__ import print_function
 import random
@@ -59,4 +49,3 @@ class Watcher(Stream):
 
 if __name__ == "__main__":
     run_streams()
-```
