@@ -12,7 +12,6 @@ class BaseFeed(Stream):
         super(BaseFeed, self).__init__()
 
     def go(self):
-        # while True:
         for _ in range(5):
             time.sleep(random.random() * 2)
             self.emit(self.counter)

@@ -30,23 +30,18 @@ class Stream(threading.Thread):
     def __init__(self, *args):
         super(Stream, self).__init__()
         self.observers = []
-        self.queue = None
+        self.queue = Queue()
         self.log = logging.getLogger(__name__)
 
         # wire up our input queue to our dependencies
         self.upstreams = {}
         for a in args:
             if isinstance(a, Stream):
-                if self.queue is None:
-                    self.queue = Queue()
                 self.upstreams[a.__class__] = True
-                a._add_observer(self)
+                a.observers.append(self)
 
         # die when the parent dies
         self.daemon = True
-
-    def _add_observer(self, o):
-        self.observers.append(o.queue)
 
     def emit(self, data):
         """
@@ -58,10 +53,10 @@ class Stream(threading.Thread):
         """
         if self.deep_copy and data != _poison:
             for i, o in enumerate(self.observers):
-                o.put((self.__class__, data if i == 0 else copy.deepcopy(data)))
+                o.queue.put((self.__class__, data if i == 0 else copy.deepcopy(data)))
         else:
             for o in self.observers:
-                o.put((self.__class__, data))
+                o.queue.put((self.__class__, data))
 
     def update(self, src, data):
         """
