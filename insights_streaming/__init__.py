@@ -31,10 +31,10 @@ class Stream(threading.Thread):
         super(Stream, self).__init__()
         self.observers = []
         self.queue = Queue()
+        self.upstreams = {}
         self.log = logging.getLogger(__name__)
 
         # wire up our input queue to our dependencies
-        self.upstreams = {}
         for a in args:
             if isinstance(a, Stream):
                 self.upstreams[a.__class__] = True
@@ -45,9 +45,9 @@ class Stream(threading.Thread):
 
     def emit(self, data):
         """
-        Use emit to send data to all downstream dependencies. If more than one
-        dependent exists, a deepcopy of the emitted data is sent to each one if
-        the ``deep_copy`` class attribute is ``True``. Otherwise, the same
+        Use emit to send data to all dependents. If more than one dependent
+        exists, a deepcopy of the emitted data is sent to each one if the
+        ``deep_copy`` class attribute is ``True``. Otherwise, the same
         reference to the data is sent to all dependents, and it must be thread
         safe.
         """
@@ -64,9 +64,8 @@ class Stream(threading.Thread):
         data.
 
         Args:
-            src (class): This will be the class of the ``Stream`` that emitted
-                the data.
-            data: This will be whatever the ``src`` emitted.
+            src (class): the class of the ``Stream`` that emitted the data
+            data: whatever the ``src`` emitted
         """
         pass
 
@@ -82,9 +81,6 @@ class Stream(threading.Thread):
         """
         while self._keep_going:
             try:
-                # Just return if we're not listening to anybody.
-                if not self.queue:
-                    return
                 src, evt = self.queue.get(2)
                 if evt == _poison:
                     self.upstreams[src] = False
